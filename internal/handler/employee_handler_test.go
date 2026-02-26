@@ -20,7 +20,11 @@ type mockEmployeeService struct {
 	createFn func(departmentID uint, fullName, position string, hiredAt *time.Time) (*domain.Employee, error)
 }
 
-func (m *mockEmployeeService) Create(departmentID uint, fullName, position string, hiredAt *time.Time) (*domain.Employee, error) {
+func (m *mockEmployeeService) Create(
+	departmentID uint,
+	fullName, position string,
+	hiredAt *time.Time,
+) (*domain.Employee, error) {
 	return m.createFn(departmentID, fullName, position, hiredAt)
 }
 
@@ -179,10 +183,18 @@ func TestCreateEmployeeRequest_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{"valid without hired_at", handler.CreateEmployeeRequest{FullName: "Ivan", Position: "Dev"}, false},
-		{"valid with hired_at", handler.CreateEmployeeRequest{FullName: "Ivan", Position: "Dev", HiredAt: &validHiredAt}, false},
+		{
+			"valid with hired_at",
+			handler.CreateEmployeeRequest{FullName: "Ivan", Position: "Dev", HiredAt: &validHiredAt},
+			false,
+		},
 		{"empty full_name", handler.CreateEmployeeRequest{FullName: "", Position: "Dev"}, true},
 		{"empty position", handler.CreateEmployeeRequest{FullName: "Ivan", Position: ""}, true},
-		{"invalid hired_at", handler.CreateEmployeeRequest{FullName: "Ivan", Position: "Dev", HiredAt: ptr("bad-date")}, true},
+		{
+			"invalid hired_at",
+			handler.CreateEmployeeRequest{FullName: "Ivan", Position: "Dev", HiredAt: ptr("bad-date")},
+			true,
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -228,7 +240,11 @@ func TestDeleteDepartmentRequest_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{"cascade", handler.DeleteDepartmentRequest{Mode: "cascade"}, false},
-		{"reassign with target", handler.DeleteDepartmentRequest{Mode: "reassign", ReassignToDepartmentID: &reassignID}, false},
+		{
+			"reassign with target",
+			handler.DeleteDepartmentRequest{Mode: "reassign", ReassignToDepartmentID: &reassignID},
+			false,
+		},
 		{"invalid mode", handler.DeleteDepartmentRequest{Mode: "drop"}, true},
 		{"reassign without target", handler.DeleteDepartmentRequest{Mode: "reassign"}, true},
 		{"empty mode", handler.DeleteDepartmentRequest{Mode: ""}, true},

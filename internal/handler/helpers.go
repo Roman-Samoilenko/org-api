@@ -42,7 +42,13 @@ func ParseDepth(logger *slog.Logger, w http.ResponseWriter, r *http.Request) (in
 }
 
 // ParseBoolQuery парсит boolean query-параметр с дефолтным значением.
-func ParseBoolQuery(logger *slog.Logger, w http.ResponseWriter, r *http.Request, paramName string, defaultValue bool) (bool, bool) {
+func ParseBoolQuery(
+	logger *slog.Logger,
+	w http.ResponseWriter,
+	r *http.Request,
+	paramName string,
+	defaultValue bool,
+) (bool, bool) {
 	valueStr := r.URL.Query().Get(paramName)
 	if valueStr == "" {
 		return defaultValue, true

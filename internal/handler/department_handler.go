@@ -21,7 +21,7 @@ func NewDepartmentHandler(ds DepartmentService, logger *slog.Logger) *Department
 	}
 }
 
-// CreateDepartment обработчик POST /departments
+// CreateDepartment обработчик POST /departments.
 func (h *DepartmentHandler) CreateDepartment(w http.ResponseWriter, r *http.Request) {
 	defer CloseBody(h.logger, r.Body)
 
@@ -48,21 +48,7 @@ func (h *DepartmentHandler) CreateDepartment(w http.ResponseWriter, r *http.Requ
 	respondJSON(w, http.StatusCreated, dept)
 }
 
-func (h *DepartmentHandler) handleCreateError(w http.ResponseWriter, name string, parentID *uint, err error) {
-	switch {
-	case errors.Is(err, service.ErrDuplicateName):
-		h.logger.Info("duplicate department name", "name", name, "parent_id", parentID)
-		respondError(w, http.StatusConflict, err.Error())
-	case errors.Is(err, service.ErrDepartmentNotFound):
-		h.logger.Info("parent department not found", "parent_id", parentID)
-		respondError(w, http.StatusNotFound, err.Error())
-	default:
-		h.logger.Error("failed to create department", "error", err)
-		respondError(w, http.StatusInternalServerError, "Internal server error")
-	}
-}
-
-// GetDepartment обработчик GET /departments/{id}
+// GetDepartment обработчик GET /departments/{id}.
 func (h *DepartmentHandler) GetDepartment(w http.ResponseWriter, r *http.Request) {
 	id, ok := ParseID(h.logger, w, r, "id")
 	if !ok {
@@ -89,7 +75,7 @@ func (h *DepartmentHandler) GetDepartment(w http.ResponseWriter, r *http.Request
 	respondJSON(w, http.StatusOK, dept)
 }
 
-// UpdateDepartment обработчик PATCH /departments/{id}
+// UpdateDepartment обработчик PATCH /departments/{id}.
 func (h *DepartmentHandler) UpdateDepartment(w http.ResponseWriter, r *http.Request) {
 	defer CloseBody(h.logger, r.Body)
 
@@ -121,24 +107,7 @@ func (h *DepartmentHandler) UpdateDepartment(w http.ResponseWriter, r *http.Requ
 	respondJSON(w, http.StatusOK, updated)
 }
 
-func (h *DepartmentHandler) handleUpdateError(w http.ResponseWriter, id uint, err error) {
-	switch {
-	case errors.Is(err, service.ErrDepartmentNotFound):
-		h.logger.Info("department not found", "id", id)
-		respondError(w, http.StatusNotFound, err.Error())
-	case errors.Is(err, service.ErrDuplicateName):
-		h.logger.Info("duplicate department name", "id", id)
-		respondError(w, http.StatusConflict, err.Error())
-	case errors.Is(err, service.ErrCycleDetected):
-		h.logger.Info("cycle detected", "id", id)
-		respondError(w, http.StatusConflict, err.Error())
-	default:
-		h.logger.Error("failed to update department", "id", id, "error", err)
-		respondError(w, http.StatusInternalServerError, "Internal server error")
-	}
-}
-
-// DeleteDepartment обработчик DELETE /departments/{id}
+// DeleteDepartment обработчик DELETE /departments/{id}.
 func (h *DepartmentHandler) DeleteDepartment(w http.ResponseWriter, r *http.Request) {
 	id, ok := ParseID(h.logger, w, r, "id")
 	if !ok {
@@ -169,6 +138,37 @@ func (h *DepartmentHandler) handleDeleteError(w http.ResponseWriter, id uint, re
 		respondError(w, http.StatusNotFound, "reassign_to_department_id not found")
 	default:
 		h.logger.Error("failed to delete department", "id", id, "error", err)
+		respondError(w, http.StatusInternalServerError, "Internal server error")
+	}
+}
+
+func (h *DepartmentHandler) handleCreateError(w http.ResponseWriter, name string, parentID *uint, err error) {
+	switch {
+	case errors.Is(err, service.ErrDuplicateName):
+		h.logger.Info("duplicate department name", "name", name, "parent_id", parentID)
+		respondError(w, http.StatusConflict, err.Error())
+	case errors.Is(err, service.ErrDepartmentNotFound):
+		h.logger.Info("parent department not found", "parent_id", parentID)
+		respondError(w, http.StatusNotFound, err.Error())
+	default:
+		h.logger.Error("failed to create department", "error", err)
+		respondError(w, http.StatusInternalServerError, "Internal server error")
+	}
+}
+
+func (h *DepartmentHandler) handleUpdateError(w http.ResponseWriter, id uint, err error) {
+	switch {
+	case errors.Is(err, service.ErrDepartmentNotFound):
+		h.logger.Info("department not found", "id", id)
+		respondError(w, http.StatusNotFound, err.Error())
+	case errors.Is(err, service.ErrDuplicateName):
+		h.logger.Info("duplicate department name", "id", id)
+		respondError(w, http.StatusConflict, err.Error())
+	case errors.Is(err, service.ErrCycleDetected):
+		h.logger.Info("cycle detected", "id", id)
+		respondError(w, http.StatusConflict, err.Error())
+	default:
+		h.logger.Error("failed to update department", "id", id, "error", err)
 		respondError(w, http.StatusInternalServerError, "Internal server error")
 	}
 }

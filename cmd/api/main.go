@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"org-api/internal/config"
@@ -27,6 +29,14 @@ const (
 )
 
 func main() {
+	if err := run(); err != nil {
+		slog.Error("fatal error", "error", err)
+		os.Exit(1)
+	}
+}
+
+// run содержит основную логику приложения и возвращает ошибку при фатальном сбое.
+func run() error {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	slog.SetDefault(logger)
 
@@ -35,8 +45,7 @@ func main() {
 
 	db, sqlDB, err := initDB(cfg.DBString)
 	if err != nil {
-		logger.Error("failed to init database", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("init database: %w", err)
 	}
 	defer func() {
 		if err := sqlDB.Close(); err != nil {
@@ -45,8 +54,7 @@ func main() {
 	}()
 
 	if err := runMigrations(sqlDB); err != nil {
-		logger.Error("failed to apply migrations", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("apply migrations: %w", err)
 	}
 	logger.Info("migrations applied successfully")
 
@@ -60,27 +68,32 @@ func main() {
 		WriteTimeout: serverWriteTimeout,
 	}
 
+	errCh := make(chan error, 1)
 	go func() {
 		logger.Info("starting server", "addr", server.Addr)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Error("server error", "error", err)
-			os.Exit(1)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errCh <- fmt.Errorf("server error: %w", err)
 		}
 	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-quit
-	logger.Info("shutting down server...")
+
+	select {
+	case <-quit:
+		logger.Info("shutting down server...")
+	case err := <-errCh:
+		logger.Error("server error", "error", err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultContextTimeout)
 	defer cancel()
-
 	if err := server.Shutdown(ctx); err != nil {
-		logger.Error("shutdown error", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("shutdown error: %w", err)
 	}
+
 	logger.Info("server stopped gracefully")
+	return nil
 }
 
 // initDB открывает соединение с БД и возвращает gorm.DB и sql.DB.

@@ -3,7 +3,6 @@ package handler_test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -34,7 +33,13 @@ func (m *mockDepartmentService) Create(name string, parentID *uint) (*domain.Dep
 func (m *mockDepartmentService) Update(id uint, name *string, parentID *uint) (*domain.Department, error) {
 	return m.updateFn(id, name, parentID)
 }
-func (m *mockDepartmentService) GetWithTree(id uint, depth int, includeEmployees bool, sortBy string) (*domain.Department, error) {
+
+func (m *mockDepartmentService) GetWithTree(
+	id uint,
+	depth int,
+	includeEmployees bool,
+	sortBy string,
+) (*domain.Department, error) {
 	return m.getWithTreeFn(id, depth, includeEmployees, sortBy)
 }
 func (m *mockDepartmentService) Delete(id uint, mode string, reassignTo *uint) error {
@@ -228,7 +233,7 @@ func TestGetDepartment_InvalidID(t *testing.T) {
 
 func TestGetDepartment_InvalidDepth(t *testing.T) {
 	for _, depth := range []string{"0", "6", "abc"} {
-		t.Run(fmt.Sprintf("depth=%s", depth), func(t *testing.T) {
+		t.Run("depth="+depth, func(t *testing.T) {
 			h := newDeptHandler(&mockDepartmentService{})
 			req := httptest.NewRequest(http.MethodGet, "/departments/1?depth="+depth, nil)
 			req.SetPathValue("id", "1")

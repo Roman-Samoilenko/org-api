@@ -1,0 +1,45 @@
+services:
+  org-api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - addr=0.0.0.0
+      - port=8080
+      - db_string=postgres://postgres:postgres@db:5432/org-db?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - org-api-net
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=org-db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+    networks:
+      - org-api-net
+
+volumes:
+  postgres_data:
+    name: org-api-postgres-data
+
+networks:
+  org-api-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16

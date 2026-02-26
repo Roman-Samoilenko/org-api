@@ -30,7 +30,12 @@ type mockDepartmentService struct {
 func (m *mockDepartmentService) Create(name string, parentID *uint) (*domain.Department, error) {
 	return m.createFn(name, parentID)
 }
-func (m *mockDepartmentService) Update(id uint, name *string, parentID *uint) (*domain.Department, error) {
+
+func (m *mockDepartmentService) Update(
+	id uint,
+	name *string,
+	parentID *uint,
+) (*domain.Department, error) {
 	return m.updateFn(id, name, parentID)
 }
 
@@ -105,7 +110,11 @@ func TestCreateDepartment_WithParentID(t *testing.T) {
 	}
 	h := newDeptHandler(svc)
 
-	req := httptest.NewRequest(http.MethodPost, "/departments", jsonBody(`{"name":"Backend","parent_id":1}`))
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/departments",
+		jsonBody(`{"name":"Backend","parent_id":1}`),
+	)
 	w := httptest.NewRecorder()
 	h.CreateDepartment(w, req)
 
@@ -156,7 +165,11 @@ func TestCreateDepartment_ParentNotFound(t *testing.T) {
 	}
 	h := newDeptHandler(svc)
 
-	req := httptest.NewRequest(http.MethodPost, "/departments", jsonBody(`{"name":"Backend","parent_id":999}`))
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/departments",
+		jsonBody(`{"name":"Backend","parent_id":999}`),
+	)
 	w := httptest.NewRecorder()
 	h.CreateDepartment(w, req)
 
@@ -196,7 +209,11 @@ func TestGetDepartment_WithQueryParams(t *testing.T) {
 	}
 	h := newDeptHandler(svc)
 
-	req := httptest.NewRequest(http.MethodGet, "/departments/1?depth=3&include_employees=false&sort_by=full_name", nil)
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/departments/1?depth=3&include_employees=false&sort_by=full_name",
+		nil,
+	)
 	req.SetPathValue("id", "1")
 	w := httptest.NewRecorder()
 	h.GetDepartment(w, req)
@@ -366,7 +383,11 @@ func TestDeleteDepartment_ReassignSuccess(t *testing.T) {
 	}
 	h := newDeptHandler(svc)
 
-	req := httptest.NewRequest(http.MethodDelete, "/departments/1?mode=reassign&reassign_to_department_id=2", nil)
+	req := httptest.NewRequest(
+		http.MethodDelete,
+		"/departments/1?mode=reassign&reassign_to_department_id=2",
+		nil,
+	)
 	req.SetPathValue("id", "1")
 	w := httptest.NewRecorder()
 	h.DeleteDepartment(w, req)
@@ -416,7 +437,11 @@ func TestDeleteDepartment_ReassignTargetNotFound(t *testing.T) {
 	}
 	h := newDeptHandler(svc)
 
-	req := httptest.NewRequest(http.MethodDelete, "/departments/1?mode=reassign&reassign_to_department_id=999", nil)
+	req := httptest.NewRequest(
+		http.MethodDelete,
+		"/departments/1?mode=reassign&reassign_to_department_id=999",
+		nil,
+	)
 	req.SetPathValue("id", "1")
 	w := httptest.NewRecorder()
 	h.DeleteDepartment(w, req)

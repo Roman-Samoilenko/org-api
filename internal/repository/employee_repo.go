@@ -31,7 +31,10 @@ func (r *employeeRepository) DeleteByDepartment(departmentID uint) error {
 }
 
 func (r *employeeRepository) UpdateDepartment(employeeIDs []uint, newDepartmentID uint) error {
-	return r.db.Model(&domain.Employee{}).Where("id IN ?", employeeIDs).Update("department_id", newDepartmentID).Error
+	return r.db.Model(&domain.Employee{}).
+		Where("id IN ?", employeeIDs).
+		Update("department_id", newDepartmentID).
+		Error
 }
 
 func (r *employeeRepository) FindByDepartment(departmentID uint) ([]domain.Employee, error) {
@@ -40,7 +43,10 @@ func (r *employeeRepository) FindByDepartment(departmentID uint) ([]domain.Emplo
 	return employees, err
 }
 
-func (r *employeeRepository) FindByDepartmentOrdered(departmentID uint, orderBy string) ([]domain.Employee, error) {
+func (r *employeeRepository) FindByDepartmentOrdered(
+	departmentID uint,
+	orderBy string,
+) ([]domain.Employee, error) {
 	var employees []domain.Employee
 	err := r.db.Where("department_id = ?", departmentID).Order(orderBy).Find(&employees).Error
 	return employees, err

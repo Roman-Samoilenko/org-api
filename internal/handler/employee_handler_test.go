@@ -71,7 +71,12 @@ func TestCreateEmployee_WithHiredAt(t *testing.T) {
 			assert.Equal(t, 2023, hiredAt.Year())
 			assert.Equal(t, time.January, hiredAt.Month())
 			assert.Equal(t, 15, hiredAt.Day())
-			return &domain.Employee{ID: 1, FullName: "Anna", Position: "Manager", HiredAt: hiredAt}, nil
+			return &domain.Employee{
+				ID:       1,
+				FullName: "Anna",
+				Position: "Manager",
+				HiredAt:  hiredAt,
+			}, nil
 		},
 	}
 	h := newEmpHandler(svc)
@@ -133,14 +138,21 @@ func TestCreateEmployee_ValidationErrors(t *testing.T) {
 		{"missing full_name", `{"position":"Engineer"}`},
 		{"empty position", `{"full_name":"Ivan","position":""}`},
 		{"missing position", `{"full_name":"Ivan"}`},
-		{"invalid hired_at format", `{"full_name":"Ivan","position":"Dev","hired_at":"15-01-2023"}`},
+		{
+			"invalid hired_at format",
+			`{"full_name":"Ivan","position":"Dev","hired_at":"15-01-2023"}`,
+		},
 		{"empty hired_at string", `{"full_name":"Ivan","position":"Dev","hired_at":""}`},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			h := newEmpHandler(&mockEmployeeService{})
-			req := httptest.NewRequest(http.MethodPost, "/departments/1/employees", jsonBody(tc.body))
+			req := httptest.NewRequest(
+				http.MethodPost,
+				"/departments/1/employees",
+				jsonBody(tc.body),
+			)
 			req.SetPathValue("id", "1")
 			w := httptest.NewRecorder()
 			h.CreateEmployee(w, req)
@@ -178,22 +190,34 @@ func TestCreateDepartmentRequest_Validate(t *testing.T) {
 func TestCreateEmployeeRequest_Validate(t *testing.T) {
 	validHiredAt := "2023-06-01"
 	cases := []struct {
+		wantErr bool
 		name    string
 		req     handler.CreateEmployeeRequest
-		wantErr bool
 	}{
-		{"valid without hired_at", handler.CreateEmployeeRequest{FullName: "Ivan", Position: "Dev"}, false},
 		{
-			"valid with hired_at",
-			handler.CreateEmployeeRequest{FullName: "Ivan", Position: "Dev", HiredAt: &validHiredAt},
 			false,
+			"valid without hired_at",
+			handler.CreateEmployeeRequest{FullName: "Ivan", Position: "Dev"},
 		},
-		{"empty full_name", handler.CreateEmployeeRequest{FullName: "", Position: "Dev"}, true},
-		{"empty position", handler.CreateEmployeeRequest{FullName: "Ivan", Position: ""}, true},
 		{
-			"invalid hired_at",
-			handler.CreateEmployeeRequest{FullName: "Ivan", Position: "Dev", HiredAt: ptr("bad-date")},
+			false,
+			"valid with hired_at",
+			handler.CreateEmployeeRequest{
+				FullName: "Ivan",
+				Position: "Dev",
+				HiredAt:  &validHiredAt,
+			},
+		},
+		{true, "empty full_name", handler.CreateEmployeeRequest{FullName: "", Position: "Dev"}},
+		{true, "empty position", handler.CreateEmployeeRequest{FullName: "Ivan", Position: ""}},
+		{
 			true,
+			"invalid hired_at",
+			handler.CreateEmployeeRequest{
+				FullName: "Ivan",
+				Position: "Dev",
+				HiredAt:  ptr("bad-date"),
+			},
 		},
 	}
 	for _, tc := range cases {
@@ -210,15 +234,15 @@ func TestCreateEmployeeRequest_Validate(t *testing.T) {
 
 func TestUpdateDepartmentRequest_Validate(t *testing.T) {
 	cases := []struct {
+		wantErr bool
 		name    string
 		req     handler.UpdateDepartmentRequest
-		wantErr bool
 	}{
-		{"nil name (no change)", handler.UpdateDepartmentRequest{Name: nil}, false},
-		{"valid name", handler.UpdateDepartmentRequest{Name: ptr("Platform")}, false},
-		{"empty name", handler.UpdateDepartmentRequest{Name: ptr("")}, true},
-		{"only spaces", handler.UpdateDepartmentRequest{Name: ptr("   ")}, true},
-		{"name too long", handler.UpdateDepartmentRequest{Name: ptr(string(make([]byte, 201)))}, true},
+		{false, "nil name (no change)", handler.UpdateDepartmentRequest{Name: nil}},
+		{false, "valid name", handler.UpdateDepartmentRequest{Name: ptr("Platform")}},
+		{true, "empty name", handler.UpdateDepartmentRequest{Name: ptr("")}},
+		{true, "only spaces", handler.UpdateDepartmentRequest{Name: ptr("   ")}},
+		{true, "name too long", handler.UpdateDepartmentRequest{Name: ptr(string(make([]byte, 201)))}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

@@ -62,7 +62,11 @@ func (s *DepartmentService) Create(name string, parentID *uint) (*domain.Departm
 }
 
 // Update обновляет имя и/или родителя подразделения.
-func (s *DepartmentService) Update(id uint, name *string, parentID *uint) (*domain.Department, error) {
+func (s *DepartmentService) Update(
+	id uint,
+	name *string,
+	parentID *uint,
+) (*domain.Department, error) {
 	dept, err := s.deptRepo.FindByID(id)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
@@ -150,7 +154,12 @@ func (s *DepartmentService) Delete(id uint, mode string, reassignTo *uint) error
 }
 
 // executeDelete выполняет удаление или переназначение в рамках транзакции.
-func (s *DepartmentService) executeDelete(tx *gorm.DB, allIDs []uint, mode string, reassignTo *uint) error {
+func (s *DepartmentService) executeDelete(
+	tx *gorm.DB,
+	allIDs []uint,
+	mode string,
+	reassignTo *uint,
+) error {
 	switch mode {
 	case "cascade":
 		return s.deleteCascade(tx, allIDs)
@@ -275,7 +284,11 @@ func (s *DepartmentService) collectDescendantIDs(tx *gorm.DB, parentID uint) ([]
 }
 
 // applyNameUpdate проверяет уникальность нового имени и применяет его к dept.
-func (s *DepartmentService) applyNameUpdate(dept *domain.Department, name *string, newParentID *uint) error {
+func (s *DepartmentService) applyNameUpdate(
+	dept *domain.Department,
+	name *string,
+	newParentID *uint,
+) error {
 	if name == nil {
 		return nil
 	}
@@ -292,7 +305,10 @@ func (s *DepartmentService) applyNameUpdate(dept *domain.Department, name *strin
 	}
 
 	if exists {
-		existing, _ := s.deptRepo.FindByNameAndParent(*name, effectiveParent)
+		existing, err := s.deptRepo.FindByNameAndParent(*name, effectiveParent)
+		if err != nil {
+			return err
+		}
 		if existing != nil && existing.ID != dept.ID {
 			return ErrDuplicateName
 		}
@@ -303,7 +319,11 @@ func (s *DepartmentService) applyNameUpdate(dept *domain.Department, name *strin
 }
 
 // applyParentUpdate проверяет корректность нового родителя и применяет его к dept.
-func (s *DepartmentService) applyParentUpdate(dept *domain.Department, id uint, parentID *uint) error {
+func (s *DepartmentService) applyParentUpdate(
+	dept *domain.Department,
+	id uint,
+	parentID *uint,
+) error {
 	if parentID == nil {
 		return nil
 	}

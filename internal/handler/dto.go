@@ -28,8 +28,8 @@ var (
 )
 
 type CreateDepartmentRequest struct {
-	Name     string `json:"name"`
 	ParentID *uint  `json:"parent_id"`
+	Name     string `json:"name"`
 }
 
 func (r *CreateDepartmentRequest) Validate() error {
@@ -44,9 +44,9 @@ func (r *CreateDepartmentRequest) Validate() error {
 }
 
 type CreateEmployeeRequest struct {
+	HiredAt  *string `json:"hired_at"`
 	FullName string  `json:"full_name"`
 	Position string  `json:"position"`
-	HiredAt  *string `json:"hired_at"`
 }
 
 func (r *CreateEmployeeRequest) Validate() error {
@@ -101,8 +101,8 @@ func (r *UpdateDepartmentRequest) Validate() error {
 
 // DeleteDepartmentRequest используется для парсинга query-параметров (gorilla/schema).
 type DeleteDepartmentRequest struct {
-	Mode                   string `schema:"mode"`
 	ReassignToDepartmentID *uint  `schema:"reassign_to_department_id"`
+	Mode                   string `schema:"mode"`
 }
 
 func (r *DeleteDepartmentRequest) Validate() error {

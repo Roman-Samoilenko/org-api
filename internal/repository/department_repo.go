@@ -51,9 +51,17 @@ func (r *departmentRepository) FindByID(id uint) (*domain.Department, error) {
 	return &dept, nil
 }
 
-func (r *departmentRepository) FindByNameAndParent(name string, parentID *uint) (*domain.Department, error) {
+func (r *departmentRepository) FindByNameAndParent(
+	name string,
+	parentID *uint,
+) (*domain.Department, error) {
 	var dept domain.Department
-	query := r.db.Where("name = ? AND (parent_id = ? OR (parent_id IS NULL AND ? IS NULL))", name, parentID, parentID)
+	query := r.db.Where(
+		"name = ? AND (parent_id = ? OR (parent_id IS NULL AND ? IS NULL))",
+		name,
+		parentID,
+		parentID,
+	)
 	err := query.First(&dept).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

@@ -60,7 +60,12 @@ func (h *DepartmentHandler) GetDepartment(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	dept, err := h.departmentService.GetWithTree(id, params.depth, params.includeEmployees, params.sortBy)
+	dept, err := h.departmentService.GetWithTree(
+		id,
+		params.depth,
+		params.includeEmployees,
+		params.sortBy,
+	)
 	if err != nil {
 		if errors.Is(err, service.ErrDepartmentNotFound) {
 			h.logger.Info("department not found", "id", id)
@@ -128,7 +133,12 @@ func (h *DepartmentHandler) DeleteDepartment(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *DepartmentHandler) handleDeleteError(w http.ResponseWriter, id uint, reassignTo *uint, err error) {
+func (h *DepartmentHandler) handleDeleteError(
+	w http.ResponseWriter,
+	id uint,
+	reassignTo *uint,
+	err error,
+) {
 	switch {
 	case errors.Is(err, service.ErrDepartmentNotFound):
 		h.logger.Info("department not found", "id", id)
@@ -142,7 +152,12 @@ func (h *DepartmentHandler) handleDeleteError(w http.ResponseWriter, id uint, re
 	}
 }
 
-func (h *DepartmentHandler) handleCreateError(w http.ResponseWriter, name string, parentID *uint, err error) {
+func (h *DepartmentHandler) handleCreateError(
+	w http.ResponseWriter,
+	name string,
+	parentID *uint,
+	err error,
+) {
 	switch {
 	case errors.Is(err, service.ErrDuplicateName):
 		h.logger.Info("duplicate department name", "name", name, "parent_id", parentID)

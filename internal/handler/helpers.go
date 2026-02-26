@@ -15,7 +15,12 @@ func CloseBody(logger *slog.Logger, body io.ReadCloser) {
 }
 
 // ParseID извлекает и парсит ID из path-параметра.
-func ParseID(logger *slog.Logger, w http.ResponseWriter, r *http.Request, paramName string) (uint, bool) {
+func ParseID(
+	logger *slog.Logger,
+	w http.ResponseWriter,
+	r *http.Request,
+	paramName string,
+) (uint, bool) {
 	idStr := r.PathValue(paramName)
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -64,13 +69,17 @@ func ParseBoolQuery(
 
 // getDepartmentParams — параметры запроса GET /departments/{id}.
 type getDepartmentParams struct {
+	sortBy           string
 	depth            int
 	includeEmployees bool
-	sortBy           string
 }
 
 // parseGetDepartmentParams парсит и валидирует все query-параметры GET /departments/{id}.
-func parseGetDepartmentParams(logger *slog.Logger, w http.ResponseWriter, r *http.Request) (getDepartmentParams, bool) {
+func parseGetDepartmentParams(
+	logger *slog.Logger,
+	w http.ResponseWriter,
+	r *http.Request,
+) (getDepartmentParams, bool) {
 	depth, ok := ParseDepth(logger, w, r)
 	if !ok {
 		return getDepartmentParams{}, false
@@ -109,7 +118,11 @@ func parseSortBy(logger *slog.Logger, w http.ResponseWriter, r *http.Request) (s
 }
 
 // parseDeleteParams парсит query-параметры DELETE /departments/{id} и валидирует их.
-func parseDeleteParams(logger *slog.Logger, w http.ResponseWriter, r *http.Request) (DeleteDepartmentRequest, bool) {
+func parseDeleteParams(
+	logger *slog.Logger,
+	w http.ResponseWriter,
+	r *http.Request,
+) (DeleteDepartmentRequest, bool) {
 	query := r.URL.Query()
 	mode := query.Get("mode")
 	reassignToStr := query.Get("reassign_to_department_id")

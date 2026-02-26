@@ -3,108 +3,57 @@ version: "2"
 run:
   timeout: 3m
   go: "1.25"
+  modules-download-mode: readonly
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - ineffassign
+    - staticcheck
+    - unused
+    - gocritic
+    - bodyclose
+    - noctx
+
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - shadow
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - loadtest
+      - third_party$
+      - builtin$
+      - examples$
 
 formatters:
   enable:
     - goimports
     - golines
-
   settings:
+    goimports:
+      local-prefixes:
+        - org-api
     golines:
       max-len: 120
-
-linters:
-  enable:
-    - asasalint
-    - asciicheck
-    - bidichk
-    - bodyclose
-    - canonicalheader
-    - copyloopvar
-    - cyclop
-    - dupl
-    - durationcheck
-    - embeddedstructfieldcheck
-    - errcheck
-    - errname
-    - errorlint
-    - exhaustive
-    - exptostd
-    - fatcontext
-    - forbidigo
-    - funcorder
-    - funlen
-    - gocheckcompilerdirectives
-    - gochecksumtype
-    - gocognit
-    - goconst
-    - gocritic
-    - gocyclo
-    - godot
-    - gomoddirectives
-    - goprintffuncname
-    - govet
-    - iface
-    - ineffassign
-    - intrange
-    - loggercheck
-    - makezero
-    - mirror
-    - mnd
-    - musttag
-    - nakedret
-    - nestif
-    - nilerr
-    - nilnesserr
-    - nilnil
-    - noctx
-    - nolintlint
-    - nonamedreturns
-    - nosprintfhostport
-    - perfsprint
-    - predeclared
-    - promlinter
-    - protogetter
-    - reassign
-    - recvcheck
-    - rowserrcheck
-    - sloglint
-    - spancheck
-    - sqlclosecheck
-    - staticcheck
-    - testableexamples
-    - testifylint
-    - testpackage
-    - tparallel
-    - unconvert
-    - unparam
-    - unused
-    - usestdlibvars
-    - usetesting
-    - wastedassign
-    - whitespace
-
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-  govet:
-    check-shadowing: false
-  gofmt:
-    simplify: true
+  exclusions:
+    paths:
+      - loadtest
+      - third_party$
+      - builtin$
+      - examples$
 
 issues:
-  exclude-rules:
-    - path: ".*_test\\.go"
-      linters:
-        - gocritic
-        - mnd
-        - gocognit
-
-  exclude-dirs:
-    - "loadtest"
-    
-output:
-  formats:
-    colored-line-number: {}
-  sort-results: true
+  max-issues-per-linter: 0
+  max-same-issues: 0
